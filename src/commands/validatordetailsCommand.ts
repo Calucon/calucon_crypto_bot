@@ -52,7 +52,6 @@ export class ValidatordetailsCommand {
  */
 function getSuccessMessage(stdOut: string, croPrice: string): string {
   const data = JSON.parse(stdOut);
-  console.log("Details: %o", data);
 
   const delegated = (parseInt(data.tokens) / Math.pow(10, 14)).toFixed(2);
   const comms = (
