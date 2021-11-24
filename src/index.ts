@@ -11,15 +11,15 @@ const bot = new Telegraf(process.env.BOT_TOKEN!!);
 import quitCommand from "./commands/quitCommand";
 import helpCommand from "./commands/helpCommand";
 import cropriceCommand from "./commands/cropriceCommand";
+import validatordetailsCommand from "./commands/validatordetailsCommand";
 
 // quitCommand(bot);
 helpCommand(bot);
 cropriceCommand(bot);
+validatordetailsCommand(bot);
 
 bot.launch();
 console.log("Bot launched!");
-
-import * as cmcApi from "./apis/cmcApi";
 
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
