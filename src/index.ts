@@ -7,27 +7,19 @@ if (process.env.BOT_TOKEN === undefined) {
 }
 const bot = new Telegraf(process.env.BOT_TOKEN!!);
 
-bot.command("quit", (ctx) => {
-  // Explicit usage
-  ctx.telegram.leaveChat(ctx.message.chat.id);
+// import commands
+import quitCommand from "./commands/quitCommand";
+import helpCommand from "./commands/helpCommand";
+import cropriceCommand from "./commands/cropriceCommand";
 
-  // Using context shortcut
-  ctx.leaveChat();
-});
-
-bot.start((ctx) => ctx.reply("Hello"));
-bot.help((ctx) => ctx.reply("Help message"));
-bot.on("message", (ctx) =>
-  ctx.telegram.copyMessage(
-    ctx.message.chat.id,
-    ctx.message.chat.id,
-    ctx.message.message_id
-  )
-);
-bot.action("delete", (ctx) => ctx.deleteMessage());
+// quitCommand(bot);
+helpCommand(bot);
+cropriceCommand(bot);
 
 bot.launch();
 console.log("Bot launched!");
+
+import * as cmcApi from "./apis/cmcApi";
 
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
