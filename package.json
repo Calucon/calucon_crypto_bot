@@ -1,0 +1,21 @@
+{
+  "name": "calucon_crypto_bot",
+  "version": "0.0.1",
+  "description": "Calucon Crypto Bot",
+  "main": "src/index.ts",
+  "scripts": {
+    "start:dev": "nodemon"
+  },
+  "author": "Simon Schwitz",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "telegraf": "^4.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.10",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2"
+  }
+}
