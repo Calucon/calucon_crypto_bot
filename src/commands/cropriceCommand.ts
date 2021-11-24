@@ -1,6 +1,7 @@
 import { Context, Telegraf } from "telegraf";
 import { Update } from "telegraf/typings/core/types/typegram";
-import * as cmcApi from "../apis/cmcApi";
+import * as cdcApi from "../apis/cdcApi";
+import * as cbApi from "../apis/cbApi";
 
 export class CropriceCommand {
   constructor(bot: Telegraf<Context<Update>>) {
@@ -9,21 +10,33 @@ export class CropriceCommand {
 
   private async run(ctx: Context<Update>) {
     const messagePromise = ctx.replyWithMarkdown("_Loading prices..._");
-    const pricePromise = cmcApi.prices(["CRO", "VVS"]);
+    const priceCroCdcPromise = cdcApi.prices("CRO_USDC");
+    const priceVvsCdcPromise = cdcApi.prices("VVS_USDC");
+    const priceCroCbPromise = cbApi.prices("CRO-USD");
 
     const message = await messagePromise;
-    const prices = await pricePromise;
+    const priceCroCdc = (await priceCroCdcPromise).result.data;
+    const priceVvsCdc = (await priceVvsCdcPromise).result.data;
+    const priceCroCb = (await priceCroCbPromise).data;
 
-    const croPrice = parseFloat(prices.data.CRO.quote.USD.price).toFixed(5);
-    const vvsPrice = parseFloat(prices.data.VVS.quote.USD.price).toFixed(8);
+    const croPriceCdc = parseFloat(priceCroCdc.b).toFixed(5);
+    const croPriceCb = parseFloat(priceCroCb.amount).toFixed(5);
+    const vvsPriceCdc = parseFloat(priceVvsCdc.b).toFixed(8);
 
     ctx.telegram.editMessageText(
       ctx.chat?.id,
       message.message_id,
       undefined,
-      ["```", `CRO - USD: $${croPrice}`, `VVS - USD: $${vvsPrice}`, "```"].join(
-        "\n"
-      ),
+      [
+        "```",
+        `[${cdcApi.NAME}]`,
+        `CRO - USDC: $${croPriceCdc}`,
+        `VVS - USDC: $${vvsPriceCdc}`,
+        "",
+        `[${cbApi.NAME}]`,
+        `CRO - USD: $${croPriceCb}`,
+        "```",
+      ].join("\n"),
       { parse_mode: "Markdown" }
     );
   }
