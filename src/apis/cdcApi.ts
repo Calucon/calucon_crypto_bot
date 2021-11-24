@@ -1,8 +1,11 @@
 import rp from "request-promise";
 
+if (process.env.CDC_API_KEY == undefined) {
+  throw new Error("CDC_API_KEY not defined!");
+}
+
 export const NAME = "Crypto.com Exchange";
 const API_KEY = process.env.CDC_API_KEY;
-const API_SECRET = process.env.CDC_API_SECRET;
 const BASE_URL = "https://api.crypto.com/v2";
 
 export function prices(ticker: string) {

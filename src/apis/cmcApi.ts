@@ -1,5 +1,9 @@
 import rp from "request-promise";
 
+if (process.env.CMC_API_KEY == undefined) {
+  throw new Error("CMC_API_KEY not defined!");
+}
+
 export const NAME = "CoinMarketCap";
 const API_KEY = process.env.CMC_API_KEY;
 const BASE_URL = "https://pro-api.coinmarketcap.com/v1";
