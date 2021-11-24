@@ -15,25 +15,27 @@ export class ValidatordetailsCommand {
   }
 
   private async run(ctx: Context<Update>) {
-    const messagePromise = ctx.replyWithMarkdown("_Loading details..._");
-    const detailsPromise = validator.details(VALIDATOR);
+    try {
+      const messagePromise = ctx.replyWithMarkdown("_Loading details..._");
+      const detailsPromise = validator.details(VALIDATOR);
+      const croPricePromise = cdcApi.getPrice("CRO_USDC", 5);
 
-    const priceCroCdcPromise = cdcApi.prices("CRO_USDC");
-    const priceCroCdc = (await priceCroCdcPromise).result.data;
-    const croPriceCdc = parseFloat(priceCroCdc.b).toFixed(5);
+      const croPriceCdc = await croPricePromise;
+      const message = await messagePromise;
+      const details = await detailsPromise;
 
-    const message = await messagePromise;
-    const details = await detailsPromise;
-
-    ctx.telegram.editMessageText(
-      ctx.chat?.id,
-      message.message_id,
-      undefined,
-      details.stderr.length > 0
-        ? this.getErrorMessage()
-        : getSuccessMessage(details.stdout, croPriceCdc),
-      { parse_mode: "Markdown" }
-    );
+      ctx.telegram.editMessageText(
+        ctx.chat?.id,
+        message.message_id,
+        undefined,
+        details.stderr.length > 0
+          ? this.getErrorMessage()
+          : getSuccessMessage(details.stdout, croPriceCdc),
+        { parse_mode: "Markdown" }
+      );
+    } catch (e) {
+      console.log("error: %o", e);
+    }
   }
 
   private getErrorMessage(): string {

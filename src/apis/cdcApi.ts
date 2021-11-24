@@ -8,7 +8,7 @@ export const NAME = "Crypto.com Exchange";
 const API_KEY = process.env.CDC_API_KEY;
 const BASE_URL = "https://api.crypto.com/v2";
 
-export function prices(ticker: string) {
+export function queryPriceRaw(ticker: string) {
   const requestOptions = {
     method: "GET",
     uri:
@@ -19,4 +19,18 @@ export function prices(ticker: string) {
   };
 
   return rp(requestOptions);
+}
+
+export async function getPrice(
+  ticker: string,
+  decimals: number
+): Promise<string> {
+  try {
+    const queryResult = await queryPriceRaw(ticker);
+    const price = queryResult.result.data;
+    return parseFloat(price.b).toFixed(decimals);
+  } catch (e) {
+    console.error("error: %o", e);
+    return "error";
+  }
 }

@@ -9,36 +9,36 @@ export class CropriceCommand {
   }
 
   private async run(ctx: Context<Update>) {
-    const messagePromise = ctx.replyWithMarkdown("_Loading prices..._");
-    const priceCroCdcPromise = cdcApi.prices("CRO_USDC");
-    const priceVvsCdcPromise = cdcApi.prices("VVS_USDC");
-    const priceCroCbPromise = cbApi.prices("CRO-USD");
+    try {
+      const messagePromise = ctx.replyWithMarkdown("_Loading prices..._");
+      const priceCroCdcPromise = cdcApi.getPrice("CRO_USDC", 5);
+      const priceVvsCdcPromise = cdcApi.getPrice("VVS_USDC", 8);
+      const priceCroCbPromise = cbApi.getPrice("CRO-USD", 5);
 
-    const message = await messagePromise;
-    const priceCroCdc = (await priceCroCdcPromise).result.data;
-    const priceVvsCdc = (await priceVvsCdcPromise).result.data;
-    const priceCroCb = (await priceCroCbPromise).data;
+      const message = await messagePromise;
+      const croPriceCdc = await priceCroCdcPromise;
+      const vvsPriceCdc = await priceVvsCdcPromise;
+      const croPriceCb = await priceCroCbPromise;
 
-    const croPriceCdc = parseFloat(priceCroCdc.b).toFixed(5);
-    const croPriceCb = parseFloat(priceCroCb.amount).toFixed(5);
-    const vvsPriceCdc = parseFloat(priceVvsCdc.b).toFixed(8);
-
-    ctx.telegram.editMessageText(
-      ctx.chat?.id,
-      message.message_id,
-      undefined,
-      [
-        "```",
-        `[${cdcApi.NAME}]`,
-        `CRO - USDC: $${croPriceCdc}`,
-        `VVS - USDC: $${vvsPriceCdc}`,
-        "",
-        `[${cbApi.NAME}]`,
-        `CRO - USD: $${croPriceCb}`,
-        "```",
-      ].join("\n"),
-      { parse_mode: "Markdown" }
-    );
+      ctx.telegram.editMessageText(
+        ctx.chat?.id,
+        message.message_id,
+        undefined,
+        [
+          "```",
+          `[${cdcApi.NAME}]`,
+          `CRO - USDC: $${croPriceCdc}`,
+          `VVS - USDC: $${vvsPriceCdc}`,
+          "",
+          `[${cbApi.NAME}]`,
+          `CRO - USD: $${croPriceCb}`,
+          "```",
+        ].join("\n"),
+        { parse_mode: "Markdown" }
+      );
+    } catch (e) {
+      console.error("error: %o", e);
+    }
   }
 }
 
