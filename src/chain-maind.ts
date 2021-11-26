@@ -24,6 +24,11 @@ function getError(error: string) {
   return { stdout: "", stderr: error };
 }
 
+/**
+ * Executes the given command
+ * @param command command to execute
+ * @returns
+ */
 async function execute(command: string) {
   try {
     return execPromise(
@@ -56,4 +61,33 @@ export async function validatorSlashing(valodatorConsensPublicKey: string) {
     promise,
     getError("timeout")
   );
+}
+
+/**
+ * The ' status' command writes to stderr by detault.
+ * Therefore we must modify the default behavior
+ * @returns
+ */
+export async function status() {
+  try {
+    const promise = execPromise(
+      `${CHAIN_MAIND} status --node ${CHAIN_MAIND_NODE}`
+    );
+    const result = await timeoutPromise(
+      CONSTANTS.CHAIN_MAIND_TIMEOUT,
+      promise,
+      getError("timeout")
+    );
+
+    // status writes to stderr by default...
+    if (result.stderr != "timeout") {
+      return {
+        stdout: result.stderr,
+        stderr: "",
+      };
+    }
+    return result;
+  } catch (e) {
+    return getError((e as Error).message);
+  }
 }

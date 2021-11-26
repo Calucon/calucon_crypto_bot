@@ -1,7 +1,7 @@
 import { Context, Telegraf } from "telegraf";
 import { Update } from "telegraf/typings/core/types/typegram";
 import * as cdcApi from "../apis/cdcApi";
-import { validatorDetails, validatorSlashing } from "../chain-maind";
+import { validatorDetails, validatorSlashing, status } from "../chain-maind";
 
 if (process.env.VALIDATOR == undefined) {
   throw new Error("VALIDATOR not defined!");
@@ -23,22 +23,24 @@ export class ValidatordetailsCommand {
       const messagePromise = ctx.replyWithMarkdown("_Loading details..._");
       const detailsPromise = validatorDetails(VALIDATOR);
       const slashingPromise = validatorSlashing(VALIDATOR_CONS_PUB_KEY);
+      const statePromise = status();
       const croPricePromise = cdcApi.getPrice("CRO_USDC", 5);
 
       const croPriceCdc = await croPricePromise;
       const message = await messagePromise;
       const details = parseDetails(await detailsPromise);
       const slashing = parseSlashing(await slashingPromise);
+      const state = parseState(await statePromise);
 
       ctx.telegram.editMessageText(
         ctx.chat?.id,
         message.message_id,
         undefined,
-        getSuccessMessage(details, slashing, croPriceCdc),
+        getSuccessMessage(details, slashing, state, croPriceCdc),
         { parse_mode: "Markdown" }
       );
     } catch (e) {
-      console.log("error: %o", e);
+      console.error("error: %o", e);
     }
   }
 }
@@ -50,17 +52,28 @@ export class ValidatordetailsCommand {
  *
  * @param details
  * @param slashing
+ * @param status
  * @param croPrice
  * @returns
  */
 function getSuccessMessage(
   details: ValidatorDetails,
   slashing: ValidatorSlashing,
+  state: State,
   croPrice: string
 ): string {
   if (details.isError && slashing.isError) {
     return "_An error occurred!_";
   } else {
+    var avgBlockTime = "err";
+    if (!state.isError) {
+      const blockDiff =
+        state.syncInfo.latestBlockHeight - state.syncInfo.earliestBlockHeight;
+      const timeDiff =
+        state.syncInfo.latestBlockTime - state.syncInfo.earliestBlockTime;
+      avgBlockTime = Math.round(timeDiff / blockDiff) + "ms";
+    }
+
     return [
       `*${details.moniker}*`,
       "",
@@ -70,7 +83,7 @@ function getSuccessMessage(
       `Jailed:         ${details.jailed}`,
       `Comms Rate:     ${details.comms} %`,
       //`APR:            ${"null"}`,
-      //`Avg Block Time: ${"null"}`,
+      `Avg Block Time: ${avgBlockTime}`,
       `Missed Blocks:  ${slashing.missedBlocks}`,
       "```",
     ].join("\n");
@@ -100,7 +113,7 @@ function parseDetails(details: {
       };
     }
   } catch (e) {
-    console.log("error: %o", e);
+    console.error("error: %o", e);
   }
 
   return {
@@ -125,11 +138,44 @@ function parseSlashing(slashing: {
       };
     }
   } catch (e) {
-    console.log("error: %o");
+    console.error("error: %o");
   }
 
   return {
     missedBlocks: "err",
+    isError: true,
+  };
+}
+
+function parseState(status: { stdout: string; stderr: string }): State {
+  try {
+    if (status.stderr.length == 0) {
+      const statusData = JSON.parse(status.stdout);
+      return {
+        syncInfo: {
+          latestBlockHeight: parseInt(statusData.SyncInfo.latest_block_height),
+          latestBlockTime: Date.parse(statusData.SyncInfo.latest_block_time),
+          earliestBlockHeight: parseInt(
+            statusData.SyncInfo.earliest_block_height
+          ),
+          earliestBlockTime: Date.parse(
+            statusData.SyncInfo.earliest_block_time
+          ),
+        },
+        isError: false,
+      };
+    }
+  } catch (e) {
+    console.error("error: %o");
+  }
+
+  return {
+    syncInfo: {
+      latestBlockHeight: 0,
+      latestBlockTime: Date.parse("2021-04-06"),
+      earliestBlockHeight: 0,
+      earliestBlockTime: Date.parse("2021-04-06"),
+    },
     isError: true,
   };
 }
@@ -149,5 +195,15 @@ type ValidatorDetails = {
 };
 type ValidatorSlashing = {
   missedBlocks: string;
+  isError: boolean;
+};
+type SyncInfo = {
+  latestBlockHeight: number;
+  latestBlockTime: number;
+  earliestBlockHeight: number;
+  earliestBlockTime: number;
+};
+type State = {
+  syncInfo: SyncInfo;
   isError: boolean;
 };
