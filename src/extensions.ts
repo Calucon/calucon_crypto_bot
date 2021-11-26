@@ -19,4 +19,21 @@ export function timeoutPromise<T>(
   return Promise.race([timeout, promise]);
 }
 
-export {}; // only needed if imported as a module
+/**
+ * Trims off \r and \n at the start/end of a string
+ *
+ * @param str
+ * @returns
+ */
+export function trimNewlines(str: string): string {
+  const result = str.match(/[^\r\n]/);
+  if (!result) {
+    return "";
+  }
+  var firstIndex = result.index || 0;
+  var lastIndex = str.length - 1;
+  while (str[lastIndex] === "\r" || str[lastIndex] === "\n") {
+    lastIndex--;
+  }
+  return str.substring(firstIndex, lastIndex + 1);
+}
