@@ -35,14 +35,10 @@ npx tsc
 
 ### Configure Bot
 
-> Assuming you are still in the `calucon_crypto_bot` directory.
+> All required fields for your #env files are explained below!
 
 ```sh
-# got into the folder where the build application is
-cd build
-
-# Create .env file
-# You can find an example .env file below!
+# Create .env file and set all parameters
 nano .env
 ```
 
@@ -58,11 +54,30 @@ sudo npm install pm2 -g
 pm2 startup systemd
 
 # Start Bot
-pm2 start index.js
+pm2 start build/index.js
 ```
 
 Please note: some versions of PM2 require you to modify your `$PATH` variable in order for it to run at system startup.
+
+### Update Bot
+
+```sh
+# Stop bot
+pm2 stop build/index.js
+
+# Update code
+git pull
+
+# Rebuild bot
+npx tsc
+
+# Start bot again
+pm2 start build/index.js
+```
+
 ## BotFather Commands
+
+Using BotFather you can modify your bot so you can open a popup that shows you alist of commands the the bot supports.
 
 ```*
 help - Display help message
