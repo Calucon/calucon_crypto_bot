@@ -138,7 +138,7 @@ function parseSlashing(slashing: {
       };
     }
   } catch (e) {
-    console.error("error: %o");
+    console.error("error: %o", e);
   }
 
   return {
@@ -166,7 +166,7 @@ function parseState(status: { stdout: string; stderr: string }): State {
       };
     }
   } catch (e) {
-    console.error("error: %o");
+    console.error("error: %o", e);
   }
 
   return {
