@@ -12,7 +12,7 @@ export class QuitCommand {
       [
         "*Calucon Crypto Bot*",
         "",
-        "`/help` - Displays this message",
+        "`/help` - Displays help message",
         "`/validatordetails` - Check Validator Details",
         "`/croprice` - Display CRO price",
         "",

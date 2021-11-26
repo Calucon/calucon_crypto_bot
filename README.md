@@ -2,24 +2,93 @@
 
 Here i should write some text... soon...
 
+## Installation (Linux)
+
+### Setup NodeJS
+
+```sh
+# Download latest NodeJS setup
+curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
+
+# Adds NodeJS to apt repositories
+sudo bash nodesource_setup.sh
+
+# Install NodeJS and build-essentials
+sudo apt install nodejs build-essential git
+```
+
+### Setup Bot
+
+```sh
+# Get code from GitHub
+git clone https://github.com/Calucon/calucon_crypto_bot.git
+
+# Go into Bot directory
+cd calucon_crypto_bot
+
+# Install NodeJS dependencies
+npm i
+
+# Build Application
+npx tsc
+```
+
+### Configure Bot
+
+> Assuming you are still in the `calucon_crypto_bot` directory.
+
+```sh
+# got into the folder where the build application is
+cd build
+
+# Create .env file
+# You can find an example .env file below!
+nano .env
+```
+
+### Run Bot using PM2
+
+> About PM2: _PM2 is a daemon process manager that will help you manage and keep your application online 24/7_
+
+```sh
+# Install PM2
+sudo npm install pm2 -g
+
+# Make sure PM2 restarts at system reboot
+pm2 startup systemd
+
+# Start Bot
+pm2 start index.js
+```
+
+Please note: some versions of PM2 require you to modify your `$PATH` variable in order for it to run at system startup.
 ## BotFather Commands
 
 ```*
-validatordetails - Check Validator Details
+help - Display help message
+validatordetails - Check validator details
 croprice - Display CRO price
 ```
 
 ## .ENV
 
-```env
+```sh
+# Token given from BotFather after creating your bot
 BOT_TOKEN = "telegram bot token"
+# API Token received from CoinMarketCap
 CMC_API_KEY = "coin market cap api key"
+# API Token received from Crypto.com
 CDC_API_KEY = "crypto com api key"
 
+# Validator Address
 VALIDATOR = "validator crocncl address"
-VALIDATOR_CONS_PUB_KEY = "validator consensus public key (bech32)"
+# Validator Consensus Public Address
+VALIDATOR_CONS_PUB_KEY = "validator crocnclconspub address"
 
+# Full path to where the chain-maind executable is stored
 CHAIN_MAIND = "full path including chain-maind executable"
+# Chain-Maind node to query data from
+# use "http://localhost:26657" if running your own node
 CHAIN_MAIND_NODE = "https://mainnet.crypto.org:26657"
 ```
 
