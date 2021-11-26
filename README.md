@@ -112,7 +112,7 @@ CHAIN_MAIND_NODE = "https://mainnet.crypto.org:26657"
 
 First, query validator details. In there is a field called `consensus_pubkey` which should look similar like this:  
 
-```json
+```*
 consensus_pubkey: {
   '@type': '/cosmos.crypto.ed25519.PubKey',
   key: 'Agasur4Nrh+QWVwwGLMmFOSEJEfh8AUpglOgZ061aqc='
