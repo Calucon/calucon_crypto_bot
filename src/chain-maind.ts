@@ -80,8 +80,10 @@ export async function status() {
       getError("timeout")
     );
 
-    // status writes to stderr by default...
-    if (result.stderr != "timeout") {
+    // status writes to stderr by default according to the docs
+    // Windows writes it to stderr
+    // Linux writes it to stdout anyways
+    if (result.stderr.length > 0 && result.stderr != "timeout") {
       return {
         stdout: result.stderr,
         stderr: "",

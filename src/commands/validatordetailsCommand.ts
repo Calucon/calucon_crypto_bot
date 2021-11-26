@@ -2,7 +2,6 @@ import { Context, Telegraf } from "telegraf";
 import { Update } from "telegraf/typings/core/types/typegram";
 import * as cdcApi from "../apis/cdcApi";
 import { validatorDetails, validatorSlashing, status } from "../chain-maind";
-import { trimNewlines } from "../extensions";
 
 if (process.env.VALIDATOR == undefined) {
   throw new Error("VALIDATOR not defined!");
@@ -151,7 +150,7 @@ function parseSlashing(slashing: {
 function parseState(status: { stdout: string; stderr: string }): State {
   try {
     if (status.stderr.length == 0) {
-      const statusData = JSON.parse(trimNewlines(status.stdout));
+      const statusData = JSON.parse(status.stdout);
       return {
         syncInfo: {
           latestBlockHeight: parseInt(statusData.SyncInfo.latest_block_height),
