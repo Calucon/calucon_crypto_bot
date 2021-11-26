@@ -1,4 +1,3 @@
-import { parse } from "path/posix";
 import { Context, Telegraf } from "telegraf";
 import { Update } from "telegraf/typings/core/types/typegram";
 import * as cdcApi from "../apis/cdcApi";
@@ -28,25 +27,19 @@ export class ValidatordetailsCommand {
 
       const croPriceCdc = await croPricePromise;
       const message = await messagePromise;
-      const details = await detailsPromise;
-      const slashing = await slashingPromise;
+      const details = parseDetails(await detailsPromise);
+      const slashing = parseSlashing(await slashingPromise);
 
       ctx.telegram.editMessageText(
         ctx.chat?.id,
         message.message_id,
         undefined,
-        details.stderr.length > 0 || slashing.stderr.length > 0
-          ? this.getErrorMessage()
-          : getSuccessMessage(details.stdout, slashing.stdout, croPriceCdc),
+        getSuccessMessage(details, slashing, croPriceCdc),
         { parse_mode: "Markdown" }
       );
     } catch (e) {
       console.log("error: %o", e);
     }
-  }
-
-  private getErrorMessage(): string {
-    return "_An error occurred!_";
   }
 }
 
@@ -61,31 +54,84 @@ export class ValidatordetailsCommand {
  * @returns
  */
 function getSuccessMessage(
-  details: string,
-  slashing: string,
+  details: ValidatorDetails,
+  slashing: ValidatorSlashing,
   croPrice: string
 ): string {
-  const detailData = JSON.parse(details);
-  const slashingData = JSON.parse(slashing);
+  if (details.isError && slashing.isError) {
+    return "_An error occurred!_";
+  } else {
+    return [
+      `*${details.moniker}*`,
+      "",
+      "```",
+      `CRO Price:      $${croPrice}`,
+      `CRO Staked:     ${details.delegated} M`,
+      `Jailed:         ${details.jailed}`,
+      `Comms Rate:     ${details.comms} %`,
+      //`APR:            ${"null"}`,
+      //`Avg Block Time: ${"null"}`,
+      `Missed Blocks:  ${slashing.missedBlocks}`,
+      "```",
+    ].join("\n");
+  }
+}
 
-  const delegated = (parseInt(detailData.tokens) / Math.pow(10, 14)).toFixed(2);
-  const comms = (
-    parseFloat(detailData.commission.commission_rates.rate) * 100
-  ).toFixed(2);
+/**
+ * Parses validator details
+ * @param details
+ * @returns
+ */
+function parseDetails(details: {
+  stdout: string;
+  stderr: string;
+}): ValidatorDetails {
+  try {
+    if (details.stderr.length == 0) {
+      const detailData = JSON.parse(details.stdout);
+      return {
+        moniker: detailData.description.moniker,
+        delegated: (parseInt(detailData.tokens) / Math.pow(10, 14)).toFixed(2),
+        comms: (
+          parseFloat(detailData.commission.commission_rates.rate) * 100
+        ).toFixed(2),
+        jailed: detailData.jailed,
+        isError: false,
+      };
+    }
+  } catch (e) {
+    console.log("error: %o", e);
+  }
 
-  return [
-    `*${detailData.description.moniker}*`,
-    "",
-    "```",
-    `CRO Price:      $${croPrice}`,
-    `CRO Staked:     ${delegated} M`,
-    `Jailed:         ${detailData.jailed}`,
-    `Comms Rate:     ${comms} %`,
-    `APR:            ${"null"}`,
-    `Avg Block Time: ${"null"}`,
-    `Missed Blocks:  ${slashingData.missed_blocks_counter}`,
-    "```",
-  ].join("\n");
+  return {
+    moniker: "Error",
+    delegated: "-1",
+    comms: "-1",
+    jailed: "unknown",
+    isError: true,
+  };
+}
+
+function parseSlashing(slashing: {
+  stdout: string;
+  stderr: string;
+}): ValidatorSlashing {
+  try {
+    if (slashing.stderr.length == 0) {
+      const slashingData = JSON.parse(slashing.stdout);
+      return {
+        missedBlocks: slashingData.missed_blocks_counter,
+        isError: false,
+      };
+    }
+  } catch (e) {
+    console.log("error: %o");
+  }
+
+  return {
+    missedBlocks: "-1",
+    isError: true,
+  };
 }
 
 export default function init(
@@ -93,3 +139,15 @@ export default function init(
 ): ValidatordetailsCommand {
   return new ValidatordetailsCommand(bot);
 }
+
+type ValidatorDetails = {
+  moniker: string;
+  delegated: string;
+  comms: string;
+  jailed: string;
+  isError: boolean;
+};
+type ValidatorSlashing = {
+  missedBlocks: string;
+  isError: boolean;
+};

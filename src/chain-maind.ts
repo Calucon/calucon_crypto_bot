@@ -1,5 +1,7 @@
 import { promisify } from "util";
 import { exec } from "child_process";
+import { timeoutPromise } from "./extensions";
+import CONSTANTS from "./constants";
 
 if (process.env.CHAIN_MAIND == undefined) {
   throw new Error("CHAIN_MAIND not defined!");
@@ -15,29 +17,43 @@ const execPromise = promisify(exec);
 
 /**
  * Produces the same output as execPromise
- * @param e
+ * @param error
  * @returns
  */
-async function getError(e: Error) {
-  return { stdout: "", stderr: e.message };
+function getError(error: string) {
+  return { stdout: "", stderr: error };
 }
 
-function execute(command: string) {
+async function execute(command: string) {
   try {
     return execPromise(
       `${CHAIN_MAIND} ${command} --node ${CHAIN_MAIND_NODE} --output json`
     );
   } catch (e) {
-    return getError(e as Error);
+    return getError((e as Error).message);
   }
 }
 
 //-----------------------------------------------
 
-export function validatorDetails(validatorAddress: string) {
-  return execute(`query staking validator ${validatorAddress}`);
+export async function validatorDetails(
+  validatorAddress: string
+): Promise<{ stdout: string; stderr: string }> {
+  const promise = execute(`query staking validator ${validatorAddress}`);
+  return await timeoutPromise(
+    CONSTANTS.CHAIN_MAIND_TIMEOUT,
+    promise,
+    getError("timeout")
+  );
 }
 
 export function validatorSlashing(valodatorConsensPublicKey: string) {
-  return execute(`query slashing signing-info ${valodatorConsensPublicKey}`);
+  const promise = execute(
+    `query slashing signing-info ${valodatorConsensPublicKey}`
+  );
+  return timeoutPromise(
+    CONSTANTS.CHAIN_MAIND_TIMEOUT,
+    promise,
+    getError("timeout")
+  );
 }
