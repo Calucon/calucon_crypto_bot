@@ -77,7 +77,8 @@ pm2 start build/index.js
 
 ## BotFather Commands
 
-Using BotFather you can modify your bot so you can open a popup that shows you alist of commands the the bot supports.
+Using BotFather you can modify your bot. This allows you to define a set of commands that are available for quick access.
+After setting them up, an additional button should appear next to where you can type messaages. Clicking this button opens the quick access menu for commands.
 
 ```*
 help - Display help message
