@@ -47,11 +47,11 @@ export async function validatorDetails(
   );
 }
 
-export function validatorSlashing(valodatorConsensPublicKey: string) {
+export async function validatorSlashing(valodatorConsensPublicKey: string) {
   const promise = execute(
     `query slashing signing-info ${valodatorConsensPublicKey}`
   );
-  return timeoutPromise(
+  return await timeoutPromise(
     CONSTANTS.CHAIN_MAIND_TIMEOUT,
     promise,
     getError("timeout")
