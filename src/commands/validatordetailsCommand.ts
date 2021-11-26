@@ -105,8 +105,8 @@ function parseDetails(details: {
 
   return {
     moniker: "Error",
-    delegated: "-1",
-    comms: "-1",
+    delegated: "err",
+    comms: "err",
     jailed: "unknown",
     isError: true,
   };
@@ -129,7 +129,7 @@ function parseSlashing(slashing: {
   }
 
   return {
-    missedBlocks: "-1",
+    missedBlocks: "err",
     isError: true,
   };
 }
