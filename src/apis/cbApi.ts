@@ -29,7 +29,7 @@ export async function getPrice(
     const price = queryResult.data.amount;
     return parseFloat(price).toFixed(decimals);
   } catch (e) {
-    console.error("error: %o", e);
+    console.error("error: %o", (e as Error).stack);
     return "error";
   }
 }

@@ -36,7 +36,7 @@ export async function getPrice(
     const price = queryResult.result.data;
     return parseFloat(price.b).toFixed(decimals);
   } catch (e) {
-    console.error("error: %o", e);
+    console.error("error: %o", (e as Error).stack);
     return "error";
   }
 }
