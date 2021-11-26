@@ -1,4 +1,6 @@
 import rp from "request-promise";
+import { timeoutPromise } from "../extensions";
+import CONSTANTS from "../constants";
 
 if (process.env.CDC_API_KEY == undefined) {
   throw new Error("CDC_API_KEY not defined!");
@@ -8,7 +10,7 @@ export const NAME = "Crypto.com Exchange";
 const API_KEY = process.env.CDC_API_KEY;
 const BASE_URL = "https://api.crypto.com/v2";
 
-export function queryPriceRaw(ticker: string) {
+export async function queryPriceRaw(ticker: string) {
   const requestOptions = {
     method: "GET",
     uri:
@@ -26,7 +28,11 @@ export async function getPrice(
   decimals: number
 ): Promise<string> {
   try {
-    const queryResult = await queryPriceRaw(ticker);
+    const query = queryPriceRaw(ticker);
+    const queryResult = await timeoutPromise(CONSTANTS.CDC_API_TIMEOUT, query, {
+      result: { data: { b: "0" } },
+    });
+
     const price = queryResult.result.data;
     return parseFloat(price.b).toFixed(decimals);
   } catch (e) {
