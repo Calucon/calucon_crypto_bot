@@ -8,18 +8,22 @@ if (process.env.BOT_TOKEN === undefined) {
 const bot = new Telegraf(process.env.BOT_TOKEN!!);
 
 // import commands
-import quitCommand from "./commands/quitCommand";
 import helpCommand from "./commands/helpCommand";
 import cropriceCommand from "./commands/cropriceCommand";
 import validatordetailsCommand from "./commands/validatordetailsCommand";
 
-// quitCommand(bot);
+// register commands
 helpCommand(bot);
 cropriceCommand(bot);
 validatordetailsCommand(bot);
 
-bot.launch();
-console.log("Bot launched!");
+import { populateCache } from "./chain-maind-cached";
+(async function launch() {
+  console.log("Preparing Cache...");
+  await populateCache();
+  bot.launch();
+  console.log("Bot launched!");
+}.call(null));
 
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));

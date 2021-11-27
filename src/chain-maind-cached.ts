@@ -1,10 +1,14 @@
 import * as ChainMaind from "./chain-maind";
 import { schedule } from "node-cron";
 
+if (process.env.VALIDATOR == undefined) {
+  throw new Error("VALIDATOR not defined!");
+}
 if (process.env.VALIDATOR_CONS_PUB_KEY == undefined) {
   throw new Error("VALIDATOR_CONS_PUB_KEY not defined!");
 }
 const VALIDATOR_CONS_PUB_KEY = process.env.VALIDATOR_CONS_PUB_KEY;
+const VALIDATOR = process.env.VALIDATOR;
 
 const CACHE: Cache = {
   state: {
@@ -14,7 +18,12 @@ const CACHE: Cache = {
       earliestBlockHeight: 0,
       earliestBlockTime: Date.parse("2021-04-06"),
     },
-    isError: true,
+  },
+  details: {
+    comms: NaN,
+    delegated: NaN,
+    jailed: "err",
+    moniker: "Unknown",
   },
   slashing: {
     missedBlocks: NaN,
@@ -28,20 +37,30 @@ export default CACHE;
 //###############################################
 
 schedule("*/5 * * * *", queryStatus).start();
-while (!queryStatus()) {
-  // retry...
-}
-
 schedule("*/5 * * * *", querySlashing).start();
-while (!querySlashing()) {
-  // retry...
+schedule("*/3 * * * *", queryDetails).start();
+
+export async function populateCache() {
+  while (!(await querySlashing())) {
+    // retry...
+  }
+  while (!(await queryStatus())) {
+    // retry...
+  }
+  while (!(await queryDetails())) {
+    // retry...
+  }
 }
 
 //###############################################
 //                  Tasks                      ||
 //###############################################
 
-async function queryStatus() {
+/**
+ * Update current chain status
+ * @returns
+ */
+async function queryStatus(): Promise<boolean> {
   console.log("[CRON] Querying Chain Status...");
   const status = await ChainMaind.status();
   try {
@@ -58,7 +77,6 @@ async function queryStatus() {
             statusData.SyncInfo.earliest_block_time
           ),
         },
-        isError: false,
       };
 
       const blockDiff =
@@ -76,7 +94,11 @@ async function queryStatus() {
   return false;
 }
 
-async function querySlashing() {
+/**
+ * Update validator slashing details
+ * @returns
+ */
+async function querySlashing(): Promise<boolean> {
   console.log("[CRON] Querying Validator Slashing...");
   const slashing = await ChainMaind.validatorSlashing(VALIDATOR_CONS_PUB_KEY);
   try {
@@ -93,10 +115,40 @@ async function querySlashing() {
   return false;
 }
 
+/**
+ * Update general validator details
+ * @returns
+ */
+async function queryDetails(): Promise<boolean> {
+  console.log("[CRON] Querying Validator Details...");
+  const details = await ChainMaind.validatorDetails(VALIDATOR);
+  try {
+    if (details.stderr.length == 0) {
+      const detailData = JSON.parse(details.stdout);
+      CACHE.details = {
+        moniker: detailData.description.moniker,
+        delegated: parseInt(detailData.tokens) / Math.pow(10, 14),
+        comms: parseFloat(detailData.commission.commission_rates.rate) * 100,
+        jailed: detailData.jailed,
+      };
+    }
+    return true;
+  } catch (e) {
+    console.error("[CRON] Querying Validator Details Error: %o", e);
+  }
+  return false;
+}
+
 //###############################################
 //                  Types                      ||
 //###############################################
 
+type ValidatorDetails = {
+  moniker: string;
+  delegated: number;
+  comms: number;
+  jailed: string;
+};
 type ValidatorSlashing = {
   missedBlocks: number;
 };
@@ -108,10 +160,10 @@ type SyncInfo = {
 };
 type State = {
   syncInfo: SyncInfo;
-  isError: boolean;
 };
 type Cache = {
   state: State;
+  details: ValidatorDetails;
   slashing: ValidatorSlashing;
   avgBlockTime: number;
 };
