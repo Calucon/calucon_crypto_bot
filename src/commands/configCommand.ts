@@ -92,11 +92,11 @@ export class ConfigCommand {
     }
 
     try {
-      const exc = getType(match[2].toUpperCase());
+      const api = getType(match[2].toUpperCase());
       const coinA = match[3].toUpperCase();
       const coinB = match[4].toUpperCase();
       const dec = parseInt(match[5]);
-      addPair(exc, coinA, coinB, dec);
+      addPair(api, coinA, coinB, dec);
 
       const message = await messagePromise;
       ctx.telegram.editMessageText(
@@ -123,10 +123,10 @@ export class ConfigCommand {
     }
 
     try {
-      const exc = getType(match[2].toUpperCase());
+      const api = getType(match[2].toUpperCase());
       const coinA = match[3].toUpperCase();
       const coinB = match[4].toUpperCase();
-      removePair(exc, coinA, coinB);
+      removePair(api, coinA, coinB);
 
       const message = await messagePromise;
       ctx.telegram.editMessageText(
@@ -158,15 +158,15 @@ export class ConfigCommand {
         "`/config pair list`",
         "",
         "Add pair",
-        "`/config pair add {exc} {coinA} {coinB} {dec}`",
-        "- `{exc}` => CB (Coinbase) or CDC (Crypto.com)",
+        "`/config pair add {api} {coinA} {coinB} {dec}`",
+        "- `{api}` => CB (Coinbase) or CDC (Crypto.com)",
         "- `{coinA}` => e.g. CRO",
         "- `{coinB}` => e.g. USDC",
         "- `{dec}` => number of decimal places",
         "",
         "Remove pair",
-        "`/config pair remove {exc} {coinA} {coinB}`",
-        "- `{exc}` => CB (Coinbase) or CDC (Crypto.com)",
+        "`/config pair remove {api} {coinA} {coinB}`",
+        "- `{api}` => CDC (Crypto.com) or CB (Coinbase)",
         "- `{coinA}` => e.g. CRO",
         "- `{coinB}` => e.g. USDC",
       ].join("\n"),

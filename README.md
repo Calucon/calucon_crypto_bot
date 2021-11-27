@@ -135,3 +135,67 @@ Bech32 Acc: cropub1zcjduepqqgr2ew47pkhplyzetscp3vexznjggfz8u8cq22vz2wsxwn44d2nsa
 Bech32 Validator Operator: crocnclpub1zcjduepqqgr2ew47pkhplyzetscp3vexznjggfz8u8cq22vz2wsxwn44d2nsxrny99
 Bech32 Validator Consensus: crocnclconspub1zcjduepqqgr2ew47pkhplyzetscp3vexznjggfz8u8cq22vz2wsxwn44d2ns2nrf0r
 ```
+
+## Configuring Crypto Pairs
+
+By default the bot does not show any pairs when performing the `/croprice` command.  
+To add/remove/list pairs, there is the `/config` command:
+
+### List all pairs
+
+This command lists all added pairs grouped by API in the following format:  
+`coinA - coinB [decimals]`
+
+```sh
+/config pair list
+
+#Example output
+Available Pairs:
+
+[Crypto.com]
+VVS - USDC [8]
+CRO - USDC [5]
+
+[Coinbase]
+CRO - USD [5]
+```
+
+### Add/Update pair
+
+> **Note:**
+>
+>- In order to update a pair (update decimals), execute the same command as you would to add a pair. This will overwrite the existing entry.
+>- If the trading pair does not exist on the API, the `/croprice` command will return `NaN` for this pair
+
+```sh
+/config pair add {api} {coinA} {coinB} {decimals}
+
+# Example command
+/config pair add DCD CRO USDC 5
+
+# Example output
+Pair added!
+CRO - USDT [5]
+```
+
+Parameters:
+
+- `{api}` -> Either `CDC` for Crypto.com or `CB` from Coinbase are currently supported
+- `{coinA}` -> first part of the trading pair
+- `{coinB}` -> second part of the trading pair
+- `{decimals}` -> number of decimals to show after the comma
+
+### Remove pair
+
+> **Note:** Even if the pair does not exists in the current config, the bot will still give you a success message.
+
+```sh
+/config pair remove {api} {coinA} {coinB}
+
+# Example command
+/config pair remove CDC CRO USDC
+
+# Example output
+Pair removed!
+CRO - USDT
+```
