@@ -17,7 +17,10 @@ helpCommand(bot);
 cropriceCommand(bot);
 validatordetailsCommand(bot);
 
+// can not import cache before dotenv.config() has run
 import { populateCache } from "./chain-maind-cached";
+
+// main application entry point
 (async function launch() {
   console.log("Preparing Cache...");
   await populateCache();

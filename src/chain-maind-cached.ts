@@ -1,5 +1,6 @@
 import * as ChainMaind from "./chain-maind";
 import { schedule } from "node-cron";
+import CONSTANTS from "./constants";
 
 if (process.env.VALIDATOR == undefined) {
   throw new Error("VALIDATOR not defined!");
@@ -36,19 +37,43 @@ export default CACHE;
 //                Cron-Jobs                    ||
 //###############################################
 
-schedule("*/5 * * * *", queryStatus).start();
-schedule("*/5 * * * *", querySlashing).start();
-schedule("*/3 * * * *", queryDetails).start();
+schedule("*/5 * * * *", () => retryQuery(queryStatus, "Status")).start();
+schedule("*/5 * * * *", () =>
+  retryQuery(querySlashing, "Validator Slashing")
+).start();
+schedule("*/3 * * * *", () =>
+  retryQuery(queryDetails, "Validator Details")
+).start();
 
+/**
+ * Used to initially populate the cache
+ */
 export async function populateCache() {
-  while (!(await querySlashing())) {
-    // retry...
-  }
-  while (!(await queryStatus())) {
-    // retry...
-  }
-  while (!(await queryDetails())) {
-    // retry...
+  await Promise.all([
+    retryQuery(queryStatus, "Status"),
+    retryQuery(querySlashing, "Validator Slashing"),
+    retryQuery(queryDetails, "Validator Details"),
+  ]);
+}
+
+/**
+ * Retries the query function for as often as set in CONSTANTS.CHAIN_MAIND_RETRY
+ * @param queryFunction query function to execute
+ * @param queryName name of the query function (for logging purpose)
+ */
+async function retryQuery(
+  queryFunction: () => Promise<boolean>,
+  queryName: string
+) {
+  var tries = 0;
+  while (!(await queryFunction())) {
+    tries++;
+    if (tries > CONSTANTS.CHAIN_MAIND_TIMEOUT) {
+      console.error(
+        `[CRON] Querying ${queryName} Error: Task failed after ${CONSTANTS.CHAIN_MAIND_RETRY} retries`
+      );
+      break;
+    }
   }
 }
 
