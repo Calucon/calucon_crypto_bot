@@ -30,9 +30,6 @@ export class CropriceCommand {
         );
       });
 
-      Promise.all(promises.CDC.values());
-      Promise.all(promises.CB.values());
-
       const cdcArr = [];
       const cbArr = [];
       for (var entry of promises.CDC.entries()) {
