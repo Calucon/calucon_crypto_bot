@@ -2,7 +2,7 @@ import fs from "fs";
 
 const CONFIG_FILE = "pairs.json";
 
-type Pair = {
+export type Pair = {
   coinA: string;
   coinB: string;
   decimals: number;

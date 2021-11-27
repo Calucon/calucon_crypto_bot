@@ -1,5 +1,6 @@
 import { Context, Telegraf } from "telegraf";
 import { Update } from "telegraf/typings/core/types/typegram";
+import PAIRS, { Pair } from "../config/pairsConfig";
 import * as cdcApi from "../apis/cdcApi";
 import * as cbApi from "../apis/cbApi";
 
@@ -11,15 +12,37 @@ export class CropriceCommand {
   private async run(ctx: Context<Update>) {
     try {
       const messagePromise = ctx.replyWithMarkdown("_Loading prices..._");
-      const priceCroCdcPromise = cdcApi.getPrice("CRO_USDC", 5);
-      const priceVvsCdcPromise = cdcApi.getPrice("VVS_USDC", 8);
-      const priceCroCbPromise = cbApi.getPrice("CRO-USD", 5);
+
+      const promises: PromiseList = {
+        CDC: new Map(),
+        CB: new Map(),
+      };
+      PAIRS.CDC.forEach((it) => {
+        promises.CDC.set(
+          it,
+          cdcApi.getPrice(`${it.coinA}_${it.coinB}`, it.decimals)
+        );
+      });
+      PAIRS.CB.forEach((it) => {
+        promises.CB.set(
+          it,
+          cbApi.getPrice(`${it.coinA}-${it.coinB}`, it.decimals)
+        );
+      });
+
+      Promise.all(promises.CDC.values());
+      Promise.all(promises.CB.values());
+
+      const cdcArr = [];
+      const cbArr = [];
+      for (var entry of promises.CDC.entries()) {
+        cdcArr.push(`${entry[0].coinA} - ${entry[0].coinB}: ${await entry[1]}`);
+      }
+      for (var entry of promises.CB.entries()) {
+        cbArr.push(`${entry[0].coinA} - ${entry[0].coinB}: ${await entry[1]}`);
+      }
 
       const message = await messagePromise;
-      const croPriceCdc = await priceCroCdcPromise;
-      const vvsPriceCdc = await priceVvsCdcPromise;
-      const croPriceCb = await priceCroCbPromise;
-
       ctx.telegram.editMessageText(
         ctx.chat?.id,
         message.message_id,
@@ -27,11 +50,10 @@ export class CropriceCommand {
         [
           "```",
           `[${cdcApi.NAME}]`,
-          `CRO - USDC: $${croPriceCdc}`,
-          `VVS - USDC: $${vvsPriceCdc}`,
+          cdcArr.join("\n"),
           "",
           `[${cbApi.NAME}]`,
-          `CRO - USD: $${croPriceCb}`,
+          cbArr.join("\n"),
           "```",
         ].join("\n"),
         { parse_mode: "Markdown" }
@@ -45,3 +67,8 @@ export class CropriceCommand {
 export default function init(bot: Telegraf<Context<Update>>): CropriceCommand {
   return new CropriceCommand(bot);
 }
+
+type PromiseList = {
+  CB: Map<Pair, Promise<string>>;
+  CDC: Map<Pair, Promise<string>>;
+};
