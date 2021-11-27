@@ -9,11 +9,13 @@ const bot = new Telegraf(process.env.BOT_TOKEN!!);
 
 // import commands
 import helpCommand from "./commands/helpCommand";
+import configCommand from "./commands/configCommand";
 import cropriceCommand from "./commands/cropriceCommand";
 import validatordetailsCommand from "./commands/validatordetailsCommand";
 
 // register commands
 helpCommand(bot);
+configCommand(bot);
 cropriceCommand(bot);
 validatordetailsCommand(bot);
 
