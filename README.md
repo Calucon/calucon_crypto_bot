@@ -39,7 +39,7 @@ npx tsc
 
 ```sh
 # Create .env file and set all parameters
-nano .env
+nano build/.env
 ```
 
 ### Run Bot using PM2
@@ -67,6 +67,9 @@ pm2 stop build/index.js
 
 # Update code
 git pull
+
+# Update node dependencies
+npm i
 
 # Rebuild bot
 npx tsc
