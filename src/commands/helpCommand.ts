@@ -17,15 +17,15 @@ export class QuitCommand {
         "`/croprice` - Display CRO price",
         "",
         "*Timeouts:*",
-        ` - \`Chain-Maind:    ${CONSTANTS.CHAIN_MAIND_TIMEOUT.toLocaleString(
-          "en-US"
-        )}ms\``,
-        ` - \`Crypto.com API: ${CONSTANTS.CDC_API_TIMEOUT.toLocaleString(
-          "en-US"
-        )}ms\``,
-        ` - \`Coinbase API:   ${CONSTANTS.CB_API_TIMEOUT.toLocaleString(
-          "en-US"
-        )}ms\``,
+        ` - \`Chain-Maind:    ${(
+          CONSTANTS.CHAIN_MAIND_TIMEOUT / 1000
+        ).toLocaleString("en-US")}s\``,
+        ` - \`Crypto.com API: ${(
+          CONSTANTS.CDC_API_TIMEOUT / 1000
+        ).toLocaleString("en-US")}s\``,
+        ` - \`Coinbase API:   ${(
+          CONSTANTS.CB_API_TIMEOUT / 1000
+        ).toLocaleString("en-US")}s\``,
       ].join("\n")
     );
   }
