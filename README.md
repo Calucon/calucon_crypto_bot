@@ -138,8 +138,9 @@ Bech32 Validator Consensus: crocnclconspub1zcjduepqqgr2ew47pkhplyzetscp3vexznjgg
 
 ## Configuring Crypto Pairs
 
-By default the bot does not show any pairs when performing the `/croprice` command.  
-To add/remove/list pairs, there is the `/config` command:
+By default the bot does not show any pairs when performing the `/croprice` command.
+Using the `/config`command, you can add/edit/remove trading pairs.
+Please note, that this command can only be executed by group administrators!
 
 ### List all pairs
 

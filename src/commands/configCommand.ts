@@ -16,6 +16,10 @@ export class ConfigCommand {
   private async run(ctx: Context<Update> & { match: RegExpExecArray }) {
     try {
       const messagePromise = ctx.replyWithMarkdown("_Configuring..._");
+      if (!this.checkAdmin(ctx)) {
+        this.noPermission(ctx, messagePromise);
+        return;
+      }
       // match array can not be empty as regex will at least return an empty string
       const match = ctx.match[1].trim().toLowerCase().split(" ");
 
@@ -29,6 +33,18 @@ export class ConfigCommand {
     } catch (e) {
       console.error("error: %o", e);
     }
+  }
+
+  private async checkAdmin(ctx: Context<Update>): Promise<boolean> {
+    // currently there is no separation by group etc
+    if (ctx.chat?.type == "private") return false;
+
+    for (const admin of await ctx.getChatAdministrators()) {
+      if (ctx.message?.from == admin.user) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private async pair(
@@ -184,6 +200,20 @@ export class ConfigCommand {
       message.message_id,
       undefined,
       "_Invalid input!_",
+      { parse_mode: "Markdown" }
+    );
+  }
+
+  private async noPermission(
+    ctx: Context<Update>,
+    messagePromise: Promise<Message.TextMessage>
+  ) {
+    const message = await messagePromise;
+    ctx.telegram.editMessageText(
+      ctx.chat?.id,
+      message.message_id,
+      undefined,
+      "_You are not allowed to perform this command!_",
       { parse_mode: "Markdown" }
     );
   }
