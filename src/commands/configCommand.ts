@@ -16,7 +16,7 @@ export class ConfigCommand {
   private async run(ctx: Context<Update> & { match: RegExpExecArray }) {
     try {
       const messagePromise = ctx.replyWithMarkdown("_Configuring..._");
-      if (!this.checkAdmin(ctx)) {
+      if (!(await this.checkAdmin(ctx))) {
         this.noPermission(ctx, messagePromise);
         return;
       }
