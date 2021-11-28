@@ -37,10 +37,10 @@ export class ConfigCommand {
 
   private async checkAdmin(ctx: Context<Update>): Promise<boolean> {
     // currently there is no separation by group etc
-    if (ctx.chat?.type == "private") return false;
+    if (ctx.chat?.type == "private") return true;
 
     for (const admin of await ctx.getChatAdministrators()) {
-      if (ctx.message?.from == admin.user) {
+      if (ctx.message?.from.id == admin.user.id) {
         return true;
       }
     }
